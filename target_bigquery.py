@@ -54,7 +54,7 @@ def clear_dict_hook(items):
 def define_schema(field, name):
     schema_name = name
     schema_type = "STRING"
-    schema_mode = "NULLABLE"
+    schema_mode = "REQUIRED"
     schema_description = None
     schema_fields = ()
 
@@ -66,22 +66,22 @@ def define_schema(field, name):
                 field = types
             
     if isinstance(field['type'], list):
-        if field['type'][0] == "null":
+        if "null" in field['type']:
             schema_mode = 'NULLABLE'
-        else:
-            schema_mode = 'required'
-        schema_type = field['type'][1]
+        schema_type = next((t for t in field['type'] if t is not "null"), None)
     else:
         schema_type = field['type']
+
     if schema_type == "object":
         schema_type = "RECORD"
         schema_fields = tuple(build_schema(field))
+
     if schema_type == "array":
         schema_type = field.get('items').get('type')
         schema_mode = "REPEATED"
         if schema_type == "object":
-          schema_type = "RECORD"
-          schema_fields = tuple(build_schema(field.get('items')))
+            schema_type = "RECORD"
+            schema_fields = tuple(build_schema(field.get('items')))
 
 
     if schema_type == "string":
